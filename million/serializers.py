@@ -1,6 +1,9 @@
 from rest_framework import serializers
 from million.models import *#импорт звездочка импортируют все файлы
 from django.contrib.auth.models import User
+from django import forms
+
+
 class Table_Serializers(serializers.ModelSerializer):
 	class Meta:
 		model=Table

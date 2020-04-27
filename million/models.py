@@ -1,6 +1,44 @@
 from django.db import models
 from django.conf import settings
 import datetime
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+
+
+
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    bio = models.TextField(max_length=500, blank=True)
+    location = models.CharField(max_length=30, blank=True)
+    birth_date = models.DateField(null=True, blank=True)
+    email_confirmed = models.BooleanField(default=False)
+
+
+
+
+@receiver(post_save, sender=User)
+def update_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+    instance.profile.save()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class Table(models.Model):
 	name=models.CharField('name',max_length=20)
@@ -27,11 +65,12 @@ class Users(models.Model):
 	surname=models.CharField('surname',max_length=20)
 	login=models.CharField('login',max_length=20)
 	password=models.CharField('password',max_length=20)
-	email=models.CharField('email',max_length=20)
+	email_confirmed = models.BooleanField(default=False)
 	roleid=models.ForeignKey(Roles,on_delete=models.CASCADE)
 	date=models.DateTimeField(blank=True,null=True)
 	phone=models.PositiveIntegerField('phone')
-	owner=models.ForeignKey('auth.User',related_name='owner', on_delete=models.CASCADE)
+	
+
 
 
 
