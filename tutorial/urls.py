@@ -1,19 +1,17 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls import url
-from rest_framework import routers
 from million import views
-#from million.views import home
-from django.conf.urls import url
-from tutorial import views as core_views
+from rest_framework_simplejwt import views as jwt_views
+
+
+
 
 urlpatterns = [
-#	path('',views.home, name='home'),
-	path('signup/',views.signup, name='signup'),
-	path('accounts/',include('django.contrib.auth.urls')),
+	path('table',views.TableView.as_view()),
     path('admin/', admin.site.urls),
     path('',include('million.urls')),
-#    url(r'^account_activation_sent/$', core_views.account_activation_sent, name='account_activation_sent'),
-#   url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
-#        core_views.activate, name='activate')
+    path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
+
 ]

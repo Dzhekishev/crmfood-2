@@ -6,10 +6,6 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
 
-from million.tokens import account_activation_token
-from million.forms import SignUpForm
-from django.utils.encoding import force_text
-from django.utils.http import urlsafe_base64_decode
 
 
 from django.urls import reverse, reverse_lazy
@@ -21,6 +17,7 @@ from django.http import Http404
 from rest_framework.views import APIView
 from million.serializers import *
 
+from rest_framework.permissions import IsAuthenticated
 
 from million.serializers import UserSerializers
 from rest_framework import permissions
@@ -32,102 +29,12 @@ from django.contrib.auth.views import LoginView
 
 
 
-def signup(request):
-    if request.method == 'POST':
-        form = SignUpForm(request.POST)
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.is_active = False
-            user.save()
-            current_site = get_current_site(request)
-            subject = 'Activate Your MySite Account'
-            message = render_to_string('account_activation_email.html', {
-                'user': user,
-                'domain': current_site.domain,
-                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                'token': account_activation_token.make_token(user),
-            })
-            user.email_user(subject, message)
-            return redirect('account_activation_sent')
-    else:
-        form = SignUpForm()
-    return render(request, 'signup.html', {'form': form})
-
-
-
-def activate(request, uidb64, token):
-    try:
-        uid = force_text(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
-
-    if user is not None and account_activation_token.check_token(user, token):
-        user.is_active = True
-        user.profile.email_confirmed = True
-        user.save()
-        login(request, user)
-        return redirect('home')
-    else:
-        return render(request, 'account_activation_invalid.html')
-'''from django.contrib.auth import (
-	authenticate,
-	get_user_model,
-	login,
-	logout
-)
-from .forms import UserLoginForm,UserRegisterForm
-
-def login_view(request):
-	next=request.GET.get('next')
-	form=UserLoginForm(request.POST or None)
-	if form.is_valid():
-		username=forms.cleaned_data.get('username')
-		password=forms.cleaned_data.get('password')
-		user=authenticate(username=username,password=password)
-		login(request,user)
-		if next:
-			return redirect(next)
-		return redirect('/')
-
-	
-	context={
-		'form':form,
-	}	
-	return render(request,'login.html',context)
-
-
-
-def register_view(request):
-	next=request.GET.get('next')
-	form=UserRegisterForm(request.POST or None)
-	if form.is_valid():
-		user=form.save(commit=False)
-		password=forms.cleaned_data.get('password')
-		user.set_password(password)
-		user.save()
-		new_user=authenticate(username=user.username,password=password)
-		login(request,new_user)
-		if next:
-			return redirect(next)
-		return redirect('/')
-
-	
-	context={
-		'form':form,
-	}	
-	return render(request,'signup.html',context)
-
-def logout_view(request):
-	logout(request)
-	return redirect('/')
-
-'''
 
 class TableView(generics.ListCreateAPIView):
-	queryset=Table.objects.all()
-	serializer_class=Table_Serializers
-	permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+	permission_classes = (IsAuthenticated)
+	def get(self,request):
+		content=Table.objects.all() 
+		return Responce(content)
 
 class RolesView(generics.ListCreateAPIView):
 	queryset=Roles.objects.all()
@@ -147,7 +54,7 @@ class UsersView(generics.ListCreateAPIView):
 class Meal_CategoriesView(generics.ListCreateAPIView):
 	queryset=Meal_Categories.objects.all()
 	serializer_class=MealCategories_Serializers
-	permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
 
 class StatusesView(generics.ListCreateAPIView):
 	queryset=Statuses.objects.all()
