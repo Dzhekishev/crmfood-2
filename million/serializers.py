@@ -1,8 +1,6 @@
 from rest_framework import serializers
 from million.models import *#импорт звездочка импортируют все файлы
 from django.contrib.auth.models import User
-from django import forms
-
 
 class Table_Serializers(serializers.ModelSerializer):
 	class Meta:
@@ -17,9 +15,10 @@ class Departments_Serializers(serializers.ModelSerializer):
 		model=Departments
 		fields=('id','name')
 class Users_Serializers(serializers.ModelSerializer):
+	user=serializers.StringRelatedField(read_only=True)
 	class Meta:
 		model=Users
-		fields=('id','name','surname','login','password','email','roleid','date','phone','owner')
+		fields='__all__'
 class MealCategories_Serializers(serializers.ModelSerializer):
 	class Meta:
 		model=Meal_Categories

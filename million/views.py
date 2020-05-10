@@ -3,14 +3,10 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
   
 from django.contrib.auth import login, authenticate
-from django.contrib.auth.forms import UserCreationForm
-from django.shortcuts import render, redirect
-
 
 
 from django.urls import reverse, reverse_lazy
 from million.models import *
-from million.serializers import *
 from rest_framework import generics
 from rest_framework.response import *
 from django.http import Http404
@@ -18,6 +14,8 @@ from rest_framework.views import APIView
 from million.serializers import *
 
 from rest_framework.permissions import IsAuthenticated
+
+from .permission import IsOwnerProfileOrReadOnly
 
 from million.serializers import UserSerializers
 from rest_framework import permissions
@@ -28,13 +26,32 @@ from django.contrib.auth.views import LoginView
 
 
 
+class UsersView(generics.ListCreateAPIView):
+	queryset=Users.objects.all()
+	serializer_class=Users_Serializers
+	permission_classes = [permissions.IsAuthenticated]
+
+
+	def perform_create(self,serializer):
+		user=self.request.user
+		serializer.save(user=user)
+
+
+class Usersdetails(generics.RetrieveUpdateDestroyAPIView):
+	queryset=Users.objects.all()
+	serializer_class=Users_Serializers
+	permission_classes = [IsOwnerProfileOrReadOnly,IsAuthenticated]
+
+
+
+
+
 
 
 class TableView(generics.ListCreateAPIView):
-	permission_classes = (IsAuthenticated)
-	def get(self,request):
-		content=Table.objects.all() 
-		return Responce(content)
+	queryset=Table.objects.all()
+	serializers_class=Table_Serializers
+	permission_classes = [permissions.IsAuthenticated]
 
 class RolesView(generics.ListCreateAPIView):
 	queryset=Roles.objects.all()
@@ -46,10 +63,7 @@ class DepartmentsView(generics.ListCreateAPIView):
 	serializer_class=Departments_Serializers
 	permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-class UsersView(generics.ListCreateAPIView):
-	queryset=Users.objects.all()
-	serializer_class=Users_Serializers
-	permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
 
 class Meal_CategoriesView(generics.ListCreateAPIView):
 	queryset=Meal_Categories.objects.all()
@@ -113,9 +127,6 @@ class Departmentsdetails(generics.RetrieveUpdateDestroyAPIView):
 	queryset=Departments.objects.all()
 	serializer_class=Departments_Serializers
 
-class Usersdetails(generics.RetrieveUpdateDestroyAPIView):
-	queryset=Users.objects.all()
-	serializer_class=Users_Serializers
 
 class Meal_Categoriesdetails(generics.RetrieveUpdateDestroyAPIView):
 	queryset=Meal_Categories.objects.all()
@@ -153,11 +164,4 @@ class CP_details(generics.RetrieveUpdateDestroyAPIView):
 	queryset=Change_Password.objects.all()
 	serializers_class=CP_Serializers
 
-class UserList(generics.ListAPIView):
-	queryset = User.objects.all()
-	serializer_class = UserSerializers
-
-class UserDetail(generics.RetrieveAPIView):
-	queryset = User.objects.all()
-	serializer_class = UserSerializers
 
