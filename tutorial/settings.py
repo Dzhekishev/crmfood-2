@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
-
+import datetime
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'million',
     'djoser',
     'rest_framework_simplejwt',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -129,5 +130,13 @@ STATIC_URL = '/static/'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
             'rest_framework_simplejwt.authentication.JWTAuthentication',
+            'rest_framework.authentication.BasicAuthentication',
+            'rest_framework.authentication.SessionAuthentication',
+            'rest_framework.authentication.TokenAuthentication',
     ),
+    'DEFAULT_PERMISSION_CLASSES':(
+        'rest_framework.permissions.IsAuthenticated',
+
+        )
+    
 }

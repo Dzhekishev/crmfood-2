@@ -19,6 +19,7 @@ class Users_Serializers(serializers.ModelSerializer):
 	class Meta:
 		model=Users
 		fields='__all__'
+
 class MealCategories_Serializers(serializers.ModelSerializer):
 	class Meta:
 		model=Meal_Categories
@@ -35,18 +36,40 @@ class Meals_Serializers(serializers.ModelSerializer):
 	class Meta:
 		model=Meals
 		fields=('id','name','categoryid','price','description','owner')
+
+
+
+
+class MealsCountSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(read_only=True)
+    count = serializers.IntegerField(read_only=True)
+    sum = serializers.IntegerField(read_only=True, source='get_sum')
+
+    class Meta:
+        model = MealsCount
+        fields = ('id', 'name', 'count', 'sum')
+
+
 class Orders_Serializers(serializers.ModelSerializer):
+	mealsid = MealsCountSerializer(many=True)
+	
+
 	class Meta:
 		model=Orders
-		fields=('id','tableid','meals')
+		fields=('id','tableid','mealsid')
+
 class Checks_Serializers(serializers.ModelSerializer):
-	class Meta:
-		model=Checks
-		fields=('id','orderid')
+    mealsid = MealsCountSerializer(read_only=True)
+    servicefee = serializers.FloatField(read_only=True, source='servicefee.percentage')
+    totalsum = serializers.FloatField(source='get_totalsum', read_only=True)
+
+    class Meta:
+        model = Checks
+        fields = ('id', 'orderid', 'date', 'servicefee', 'totalsum', 'mealsid')
 class Meals_to_order_Serializers(serializers.ModelSerializer):
 	class Meta:
 		model=Meals_to_order
-		fields=('oderid','meals')
+		fields=('orderid','meals')
 
 class GYT_Serializers(serializers.ModelSerializer):
 	class Meta:

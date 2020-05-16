@@ -8,4 +8,3 @@ from .models import*
 def create_profile(sender,instance,created,**kwargs):
 	if created:
 		Users.objects.create(user=instance)
-		
